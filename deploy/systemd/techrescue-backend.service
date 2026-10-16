@@ -1,0 +1,26 @@
+[Unit]
+Description=TechRescue Node.js Express API Service
+After=network.target
+
+[Service]
+Type=simple
+User=azureuser
+WorkingDirectory=/var/www/techrescue/backend
+ExecStart=/usr/bin/node /var/www/techrescue/backend/server.js
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=techrescue-backend
+
+# Security Sandboxing
+NoNewPrivileges=true
+ProtectSystem=full
+
+# Environment variables (or load from /var/www/techrescue/backend/.env)
+Environment=NODE_ENV=production
+Environment=PORT=5000
+EnvironmentFile=-/var/www/techrescue/backend/.env
+
+[Install]
+WantedBy=multi-user.target

@@ -11,7 +11,7 @@ steps:
     displayName: 'Deploy Backend on Azure VM via SSH'
     inputs:
       # Dhyan dein: Yahan Backend VM ka SSH connection name aayega
-      sshEndpoint: 'Azure-Backend-VM-SSH' 
+      sshEndpoint: 'Azure-Linux-VM-SSH' 
       runOptions: inline
       interpreterCommand: /bin/bash
       failOnStdErr: false

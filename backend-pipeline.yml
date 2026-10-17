@@ -1,0 +1,45 @@
+trigger:
+  - main
+
+pool:
+  name: app-agent-pool
+
+steps:
+  - checkout: none
+
+  - task: SSH@0
+    displayName: 'Deploy Backend on Azure VM via SSH'
+    inputs:
+      # Dhyan dein: Yahan Backend VM ka SSH connection name aayega
+      sshEndpoint: 'Azure-Backend-VM-SSH' 
+      runOptions: inline
+      interpreterCommand: /bin/bash
+      failOnStdErr: false
+      readyTimeout: '20000'
+      inline: |
+        set -e
+
+        echo "Starting Backend Deployment..."
+
+        # /var/www folder mein jayenge
+        cd /var/www
+
+        # Agar folder pehle se hai to update karein, warna naya clone karein
+        if [ -d techrescue-backend/.git ]; then
+          cd techrescue-backend
+          git pull origin main
+        else
+          git clone --branch main https://github.com/lakshyaright/techrescue_backend.git techrescue-backend
+          cd techrescue-backend
+        fi
+
+        # Dependencies install karein (sirf production wali)
+        npm ci --production
+
+        # Backend background service ko restart karein taaki naya code apply ho jaye
+        sudo systemctl restart techrescue-backend
+        
+        # Verify karne ke liye service ka status print karein
+        sudo systemctl status techrescue-backend --no-pager
+
+        echo "Backend deployed successfully!"

@@ -132,13 +132,33 @@ exports.getUsers = async (req, res, next) => {
       queryText += ' WHERE role = $1';
     }
 
-    queryText += ' ORDER BY created_at ASC';
+    queryText += ' ORDER BY created_at DESC';
 
     const result = await db.query(queryText, params);
+    const users = result.rows.map(u => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      company: u.company || '',
+      phone: u.phone || '',
+      location: u.location || '',
+      title: u.title || '',
+      rating: parseFloat(u.rating || 5.0),
+      reviewsCount: parseInt(u.reviews_count || 0),
+      hourlyRate: parseFloat(u.hourly_rate || 0),
+      experienceYears: parseInt(u.experience_years || 0),
+      verified: Boolean(u.verified !== false),
+      isAvailable: Boolean(u.is_available !== false),
+      completedJobsCount: parseInt(u.completed_jobs_count || 0),
+      totalEarnings: parseFloat(u.total_earnings || 0),
+      createdAt: u.created_at
+    }));
+
     res.status(200).json({
       success: true,
-      count: result.rows.length,
-      data: result.rows
+      count: users.length,
+      data: users
     });
   } catch (err) {
     next(err);

@@ -118,3 +118,30 @@ exports.getMe = async (req, res, next) => {
     next(err);
   }
 };
+
+// @desc    Get all users from database
+// @route   GET /api/v1/auth/users
+exports.getUsers = async (req, res, next) => {
+  try {
+    const { role } = req.query;
+    let queryText = 'SELECT id, name, email, role, company, phone, location, title, rating, reviews_count, hourly_rate, experience_years, verified, is_available, completed_jobs_count, total_earnings, created_at FROM users';
+    const params = [];
+
+    if (role) {
+      params.push(role);
+      queryText += ' WHERE role = $1';
+    }
+
+    queryText += ' ORDER BY created_at ASC';
+
+    const result = await db.query(queryText, params);
+    res.status(200).json({
+      success: true,
+      count: result.rows.length,
+      data: result.rows
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+

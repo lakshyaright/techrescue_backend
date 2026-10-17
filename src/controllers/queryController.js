@@ -198,3 +198,61 @@ exports.updateStatus = async (req, res, next) => {
     next(err);
   }
 };
+
+// @desc    Add work log to ticket
+// @route   POST /api/v1/queries/:id/work-logs
+exports.addWorkLog = async (req, res, next) => {
+  try {
+    const { hoursSpent, notes, isDiagnostic } = req.body;
+    const logId = `wl-${Date.now()}`;
+    const result = await db.query(
+      `INSERT INTO work_logs (id, query_id, author_id, hours_spent, notes, is_diagnostic, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW())
+       RETURNING *`,
+      [logId, req.params.id, req.user.id, hoursSpent || 1.0, notes, isDiagnostic || false]
+    );
+
+    res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Resolve query with summary
+// @route   POST /api/v1/queries/:id/resolve
+exports.resolveQuery = async (req, res, next) => {
+  try {
+    const { resolutionSummary, preventiveMeasures } = req.body;
+    const result = await db.query(
+      `UPDATE queries 
+       SET status = 'RESOLVED', resolution_summary = $1, preventive_measures = $2, resolved_at = NOW(), updated_at = NOW() 
+       WHERE id = $3 
+       RETURNING *`,
+      [resolutionSummary, preventiveMeasures, req.params.id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'Ticket not found' });
+    res.status(200).json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Client confirms resolution & ratings
+// @route   POST /api/v1/queries/:id/confirm
+exports.confirmQuery = async (req, res, next) => {
+  try {
+    const { clientRating, clientFeedback } = req.body;
+    const result = await db.query(
+      `UPDATE queries 
+       SET status = 'CLIENT_CONFIRMED', client_rating = $1, client_feedback = $2, closed_at = NOW(), is_payment_released = true, updated_at = NOW() 
+       WHERE id = $3 
+       RETURNING *`,
+      [clientRating || 5, clientFeedback || '', req.params.id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'Ticket not found' });
+    res.status(200).json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    next(err);
+  }
+};
+

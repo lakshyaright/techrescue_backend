@@ -5,7 +5,10 @@ const {
   getQuery, 
   createQuery, 
   acceptJobWithLock, 
-  updateStatus 
+  updateStatus,
+  addWorkLog,
+  resolveQuery,
+  confirmQuery
 } = require('../controllers/queryController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -20,5 +23,8 @@ router.route('/:id')
 router.post('/:id/accept', protect, authorize('EXPERT', 'ADMIN'), acceptJobWithLock);
 
 router.patch('/:id/status', protect, updateStatus);
+router.post('/:id/work-logs', protect, addWorkLog);
+router.post('/:id/resolve', protect, authorize('EXPERT', 'ADMIN'), resolveQuery);
+router.post('/:id/confirm', protect, authorize('CLIENT', 'ADMIN'), confirmQuery);
 
 module.exports = router;

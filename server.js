@@ -10,6 +10,7 @@ const expertRoutes = require('./src/routes/expertRoutes');
 const engineerRoutes = require('./src/routes/engineerRoutes');
 const messageRoutes = require('./src/routes/messageRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
+const auditRoutes = require('./src/routes/auditRoutes');
 const errorHandler = require('./src/middleware/errorHandler');
 
 const app = express();
@@ -70,6 +71,7 @@ app.use('/api/v1/experts', expertRoutes);
 app.use('/api/v1/engineers', engineerRoutes);
 app.use('/api/v1/messages', messageRoutes);
 app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/audit-logs', auditRoutes);
 
 // Centralized error handling
 app.use(errorHandler);

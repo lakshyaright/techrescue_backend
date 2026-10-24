@@ -76,8 +76,8 @@ app.use('/api/v1/audit-logs', auditRoutes);
 // Centralized error handling
 app.use(errorHandler);
 
-// Start server on 0.0.0.0 for Azure VM listening
-if (process.env.NODE_ENV !== 'test') {
+// Start server on 0.0.0.0 (only when running standalone server, not inside Vercel serverless)
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`[TechRescue Backend] Server listening on http://0.0.0.0:${PORT} [${process.env.NODE_ENV || 'development'}]`);
   });

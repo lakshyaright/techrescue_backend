@@ -13,9 +13,22 @@ const useSSL = process.env.DB_SSL === 'true' || isSupabase || isAzure || (isProd
 // Serverless environments like Vercel need a lean connection pool (max 3-5) to avoid exhausting Supabase pool limits
 const maxConnections = parseInt(process.env.DB_POOL_MAX || (process.env.VERCEL ? '4' : '20'), 10);
 
-const poolConfig = process.env.DATABASE_URL
+// Sanitize DATABASE_URL if password contains unencoded special characters like '#'
+let sanitizedConnectionString = process.env.DATABASE_URL;
+if (sanitizedConnectionString) {
+  const atIndex = sanitizedConnectionString.lastIndexOf('@');
+  if (atIndex !== -1) {
+    const userPassPart = sanitizedConnectionString.substring(0, atIndex);
+    const hostDbPart = sanitizedConnectionString.substring(atIndex + 1);
+    if (userPassPart.includes('#')) {
+      sanitizedConnectionString = userPassPart.replace(/#/g, '%23') + '@' + hostDbPart;
+    }
+  }
+}
+
+const poolConfig = sanitizedConnectionString
   ? {
-      connectionString: process.env.DATABASE_URL,
+      connectionString: sanitizedConnectionString,
       ssl: useSSL ? { rejectUnauthorized: false } : false,
       max: maxConnections,
       idleTimeoutMillis: 30000,
